@@ -1,48 +1,46 @@
 # configura
-Configura Programming Challenge
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package copyfile;
+     /*******************************************************************/
+     /*Author      : Wan Chun Man                                        */
+     /*Program Name: KCFBACKUP                                           */
+     /*Description : Configura Programming Challenge(File Backup Utility)*/
+     /*Date        : 15.12.2017                                          */
+     /********************************************************************/
+             PGM        PARM(&CMDPRM)
+    /*VARIABLE SECTION?/
+             DCL        VAR(&CMDPRM) TYPE(*CHAR) LEN(20)
+             DCL        VAR(&FILENM) TYPE(*CHAR) LEN(10)
+             DCL        VAR(&MBRNAM) TYPE(*CHAR) LEN(10)
+             DCL        VAR(&DATE)   TYPE(*CHAR) LEN(8)
+             DCL        VAR(&DATE1)  TYPE(*CHAR) LEN(8)
 
-/**
- *
- * @author Ah Man
- * 
- */
-import java.io.*;
-import java.util.*;
-public class CopyFile {
+    /*FILE DECLARATION */
+             DCLF       FILE(BACKUP) OPNID(BACKUP)
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        File file = new File("C:\\Users\\Chun\\Documents\\NetBeansProjects\\CopyFile\\test.txt");
-        File copyfile = new File("C:\\Users\\Chun\\Documents\\NetBeansProjects\\test.txt");
-        BufferedReader reader;
-        PrintWriter writer;
-        String line;
-        
-        try {
-            if (copyfile.createNewFile() || !copyfile.createNewFile()){
-                reader = new BufferedReader(new FileReader(file));
-                writer = new PrintWriter(new FileWriter(copyfile));
-                
-                while ((line = reader.readLine()) != null){
-                    writer.println(line);
-                    
-                }
-                System.out.println("The file is backuped successfully in C:\\Users\\Chun\\Documents\\NetBeansProjects\\test.txt .");
-                reader.close();
-                writer.close();
-            }
-        } catch (IOException ioEx) {
-            System.err.println("Error, The file is not exists");
-            
-        }
-    }
-    
-}
+    /*RETRIEVE DATE      */
+             CHGVAR     VAR(&DATE)   VALUE(%SST(&CMDPRM 11 8))
+
+    /*VALIDATE DATE      */
+             CVTDAT     DATE(&DATE) TOVAR(&DATE1) TOFMT(*DMY)
+             MONMSG     MSGID(CPF0555 CPF0552) EXEC(DO)
+             SNDUSRMSG  MSG('The Date Is Invalid. Please key in a +
+                          valid date. Thanks.')
+             GOTO       CMDLBL(ENDPGM)
+             ENDDO
+
+    /*RETRIEVE FILE NAME */
+             CHGVAR     VAR(&FILENM) VALUE(%SST(&CMDPRM 1 10))
+
+    /*RETRIEVE MEMBER NAME */
+             CHGVAR     VAR(&MBRNAM) VALUE('BKUP' *TCAT &DATE)
+
+    /*COPY TO BACKUP FILE */
+             CPYF       FROMFILE(&FILENM) TOFILE(BACKUP) +
+                        TOMBR(&MBRNAM) +
+                        MBROPT(*REPLACE) FMTOPT(*NOCHK)
+             MONMSG     MSGID(CPF2817) EXEC(DO)
+             CPYF       FROMFILE(&FILENM) TOFILE(BACKUP) +
+                        TOMBR(&MBRNAM) +
+                        MBROPT(*ADD) FMTOPT(*NOCHK)
+             GOTO       ENDPGM
+             ENDDO
+ ENDPGM:     ENDPGM
